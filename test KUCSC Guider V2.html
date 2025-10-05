@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผนที่มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตสกลนคร</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 1. เพิ่มพื้นหลังของเว็บเป็นภาพจางๆ */
+        body {
+            font-family: 'Prompt', sans-serif;
+            /* Background changed to a solid color or a very subtle pattern if needed, but the image background is added globally below */
+            background-color: #408b22; /* Fallback color */
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative; /* Needed for the absolute positioned overlay */
+            z-index: 1;
+        }
+
+        /* Background Image with Low Opacity */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 💡 เปลี่ยน URL รูปภาพตรงนี้ */
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs_jpv3W6sfyxnjbRFrObdYZuFQdgHUfNoAg&s'); 
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1; /* Opacity จางๆ */
+            z-index: -1; /* Ensure it's behind everything */
+            pointer-events: none; /* Allows interaction with elements underneath */
+        }
+        
+        /* Apply a slight gradient overlay to maintain readability over the content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            height: calc(100vh - 140px);
+            position: relative; /* Context for children */
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(64, 139, 34, 0.8); /* Adjusted header background for better contrast with new body background */
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .title-section h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .contact-info {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .social-links a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .social-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            height: calc(100vh - 140px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1.5rem;
+            height: fit-content;
+            max-height: 100%;
+            overflow-y: auto;
+        }
+
+        .search-section {
+            margin-bottom: 2rem;
+        }
+
+        .search-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            font-family: 'Prompt', sans-serif; /* Changed Sarabun to Prompt for consistency */
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            background: white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .search-results {
+            background: white;
+            border-radius: 10px;
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-result-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: #f8f9fa;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Building List */
+        .buildings-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .building-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .building-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .building-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .building-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Map Container */
+        .map-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        #map {
+            height: 100%;
+            min-height: 500px;
+            border-radius: 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 25px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 25px 25px 0 0;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .building-image-container {
+             /* 2. เพิ่มช่องใส่ภาพ ตรงจุดที่ก่อนจะถึง room/รายชื่อห้อง */
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .building-image {
+            width: 100%;
+            max-height: 300px; /* Increased max-height for better visual */
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* New Style for Image Placeholder */
+        .building-image-placeholder {
+            width: 100%;
+            height: 250px;
+            border-radius: 15px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+
+        .building-details {
+            margin-bottom: 2rem;
+        }
+
+        .building-details h4 {
+            color: #1e3c72;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .building-details p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .rooms-section h4 {
+            color: #1e3c72;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .room-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 0.75rem;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+        }
+
+        .room-item:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .navigation-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Prompt', sans-serif; /* Changed Sarabun to Prompt for consistency */
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .navigation-btn:hover {
+            background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(76, 175, 80, 0.4);
+        }
+
+        /* Custom Marker Styles (Base) */
+        .custom-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50% 50% 50% 0; /* รูปทรงหยดน้ำแบบเดิม */
+            border: 3px solid white;
+            /* ****************************************************** */
+            /* ** ลบการหมุน -45deg ออกเพื่อให้ชี้ลงมาตรงๆ ** */
+            /* ****************************************************** */
+            transform: rotate(0deg); /* เปลี่ยนจาก -45deg เป็น 0deg */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            /* ****************************************************** */
+            /* ** ลบโค้ด ::after ที่สร้างหางซ้อนทับออก ** */
+            /* (ถ้าคุณเคยเพิ่มโค้ดนี้ ให้ลบทิ้งทั้งหมด) */
+            /* ****************************************************** */
+        }
+
+        .custom-marker:hover {
+            /* ** ลบการหมุน -45deg ออกเพื่อให้ชี้ลงมาตรงๆ ** */
+            transform: rotate(0deg) scale(1.1); /* เปลี่ยนจาก -45deg เป็น 0deg */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Custom Marker Colors (User Assignable) */
+        .marker-color-blue {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); /* Default Blue */
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        .marker-color-red {
+            background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%); /* Red for Admin */
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+        .marker-color-green {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); /* Green for Dorms/Housing */
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        .marker-color-yellow {
+            background: linear-gradient(135deg, #FFC107 0%, #FFA000 100%); /* Yellow for Food/Canteen */
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+        }
+        .marker-color-purple {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%); /* Purple for Sports/Gym */
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                height: auto;
+            }
+            
+            .sidebar {
+                order: 2;
+                max-height: 400px;
+            }
+            
+            .map-container {
+                order: 1;
+                height: 400px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .social-links {
+                justify-content: center;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 1% auto;
+            }
+            
+            .modal-header {
+                padding: 1.5rem;
+            }
+            
+            .modal-body {
+                padding: 1.5rem;
+            }
+            
+            .rooms-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 0.5rem;
+            }
+            
+            .title-section h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="https://images.unsplash.com/photo-1562774053-701939374585?w=100&h=100&fit=crop&crop=center" 
+                     alt="KU Logo" class="logo">
+                <div class="title-section">
+                    <h1>มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตสกลนคร</h1>
+                    <div class="contact-info">
+                        📞 โทร: 042 725 042
+                    </div>
+                </div>
+            </div>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/KasetsartUniversity" class="social-link" target="_blank">Facebook</a>
+                    <a href="https://www.youtube.com/@KUCSCChannel" class="social-link" target="_blank">YouTube</a>
+                    <a href="https://www.instagram.com/kasetsart_university/" class="social-link" target="_blank">Instagram</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="search-section">
+                <h3>🔍 ค้นหา</h3>
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="ค้นหาห้อง หรือชื่ออาคาร..." id="searchInput">
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+            </div>
+
+            <div class="buildings-section">
+                <h3>🏢 รายชื่ออาคาร</h3>
+                <div id="buildingsList"></div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <div id="buildingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">×</span>
+                <h2 id="modalTitle">ชื่ออาคาร</h2>
+            </div>
+            <div class="modal-body" id="modalBody">
+                </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Custom Marker Icon Creator Function
+        function createCustomIcon(colorClass) {
+            return L.divIcon({
+                className: `custom-marker ${colorClass}`,
+                iconSize: [40, 40], 
+                // *******************************************************
+                // ** แก้ไขค่า iconAnchor และ popupAnchor ใหม่ **
+                // *******************************************************
+                iconAnchor: [20, 39], // X = 20 (กึ่งกลางความกว้าง), Y = 39 (เกือบสุดขอบล่าง)
+                popupAnchor: [0, -40] // เลื่อน Popup ขึ้นไปเหนือหมุด 40px
+            });
+        }
+    
+        // Buildings Data
+        // 1. เพิ่ม property 'color' ในข้อมูลอาคาร
+        const buildings = [
+            {
+                id: 1,
+                name: 'อาคารบริหาร - อาคาร 1',
+                description: 'หรือในอีกชื่อคือสำนักงานวิทยาเขต วิทยาเขตเฉลิมพระเกียรติ จังหวัดสกลนคร',
+                lat: 17.288649996555456,
+                lng: 104.11515437247861,
+                image: 'https://occ.csc.ku.ac.th/wp-content/uploads/2016/10/building1-1.jpg',
+                // เพิ่ม Field สำหรับภาพผังอาคารตรงนี้
+                floor_plan_image: 'https://tse1.mm.bing.net/th/id/OIP.p6kcPHzNMoBMBOeM3qiR5gHaNJ?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3', // <--- เพิ่มบรรทัดนี้
+                rooms: ['1-101', '1-102', '1-103', '1-201', '1-202', '1-203', 'ห้องประชุมใหญ่', 'ห้องคอมพิวเตอร์ 1'],
+                color: 'marker-color-red', // อาคารบริหาร: สีแดง
+                details: {
+                    year: 2545,
+                    floors: 4,
+                    description: 'อาคารเรียนรวมที่ใหญ่ที่สุด ประกอบด้วยห้องเรียน ห้องปฏิบัติการ และห้องประชุม'
+                }
+            },
+            {
+                id: 2,
+                name: 'อาคารเรียนรวม - อาคาร 2',
+                description: '',
+                lat: 17.29079330402039,
+                lng: 104.11008906023095,
+                image: 'https://images.unsplash.com/photo-1581092162384-8987c1d64718?w=600&h=400&fit=crop&crop=center',
+                rooms: ['2-101', '2-102', 'ห้องปฏิบัติการฟิสิกส์', 'ห้องปฏิบัติการเคมี', '2-201', '2-202', '2-301'],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2548,
+                    floors: 3,
+                    description: 'อาคารเฉพาะทางด้านวิทยาศาสตร์ พร้อมห้องปฏิบัติการที่ทันสมัย'
+                }
+            },
+            {
+                id: 3,
+                name: 'อาคารชุดพักอาศัย - อาคาร 3',
+                description: 'โรงแรมอุทยานบ้านเชียงเครือ',
+                lat: 17.295597931430105,
+                lng: 104.1154981651662,
+                image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600&h=400&fit=crop&crop=center',
+                rooms: ['3-101', '3-102', '3-103', 'ห้องปฏิบัติการพืช', 'ห้องปฏิบัติการดิน', '3-201', '3-202'],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2550,
+                    floors: 3,
+                    description: 'อาคารเฉพาะด้านเกษตรศาสตร์ มีห้องปฏิบัติการและสวนทดลอง'
+                }
+            },
+            {
+                id: 4,
+                name: 'อาคารหอพักนิสิตชายอินทนิล - อาคาร 4',
+                description: 'อาคารหอพักนิสิตชายอินทนิล',
+                lat: 17.296478860221697,
+                lng: 104.1145385366023,
+                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop&crop=center',
+                rooms: ['ห้องอ่านหนังสือ', 'ห้องค้นคว้า', 'ห้องสื่อมัลติมีเดีย', 'ห้องประชุมเล็ก', 'ห้องคอมพิวเตอร์ 2'],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2552,
+                    floors: 5,
+                    description: 'หอสมุดที่ทันสมัย มีหนังสือและสื่อการเรียนรู้ที่หลากหลาย'
+                }
+            },
+            {
+                id: 5,
+                name: 'อาคารหอพักนิสิตหญิงนนทรี - อาคาร 5',
+                description: 'หอหญิงนนทรี',
+                lat: 17.295089584843296, 
+                lng: 104.11634014013529,
+                image: 'https://scontent.fkkc2-1.fna.fbcdn.net/v/t39.30808-6/302805488_510634681065397_3866734198889070173_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFCbwugGo0LRez_j97JtPjOglRQAPAJWGCCVFAA8AlYYBdO_Gd521oIDPworRogmxBbW71qdm-yZ7PFNmel4dCJ&_nc_ohc=OK1j0SQ3MtwQ7kNvwHREIuH&_nc_oc=Admk_4rkCeZY5KXmtDHotcTKqv0qB6C07_LFTryzI0ZzkUDLFxGSjnutW6kogQV84wc&_nc_zt=23&_nc_ht=scontent.fkkc2-1.fna&_nc_gid=yc_F5KghNI8VeHDdIGLEJA&oh=00_Afbg62RyTos5CttzSrE15VVAocGe-vKhHclsoSkk56_Bjw&oe=68DF162E',
+                rooms: ['สำนักงานคณบดี', 'สำนักงานแผนกการเงิน', 'ห้องประชุมวิโรจอิ่มพิทักษ์', 'สำนักงานทรัพยากรบุคคล', 'ห้องรับรอง'],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2540,
+                    floors: 2,
+                    description: 'อาคารสำนักงานบริหารงานหลักของมหาวิทยาลัย'
+                }
+            },
+            {
+                id: 6,
+                name: 'อาคารปฏิบัติการรวม - อาคาร 6',
+                description: 'อยู่ใกล้กับอาคาร 7',
+                lat: 17.285973335623478,
+                lng: 104.10631743227361,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/P1020078.jpg',
+                rooms: ['สำนักงานคณบดี', 'สำนักงานแผนกการเงิน', 'ห้องประชุมวิโรจอิ่มพิทักษ์', 'สำนักงานทรัพยากรบุคคล', 'ห้องรับรอง'],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2540,
+                    floors: 2,
+                    description: 'อาคารสำนักงานบริหารงานหลักของมหาวิทยาลัย'
+                }
+            },
+            {
+                id: 7,
+                name: 'อาคารวิทยาศาสตร์และเทคโนโลยี - อาคาร 7',
+                description: 'อยู่ใกล้กับอาคาร 7',
+                lat: 17.285973335623478, // <-- This coordinate is IDENTICAL to Building 6's. This is a data issue.
+                lng: 104.10631743227361, // <-- This coordinate is IDENTICAL to Building 6's. This is a data issue.
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/goody-67-1078x516.jpg',
+                rooms: ['สำนักงานคณบดี', 'สำนักงานแผนกการเงิน', 'ห้องประชุมวิโรจอิ่มพิทักษ์', 'สำนักงานทรัพยากรบุคคล', 'ห้องรับรอง'],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2540,
+                    floors: 2,
+                    description: 'อาคารสำนักงานบริหารงานหลักของมหาวิทยาลัย'
+                }
+            },
+            {
+                id: 8,
+                name: 'อาคารปฏิบัติการวิศวกรรมเครื่องกล / เทคโนโลยีการอาหาร - อาคาร 8',
+                description: 'อยู่ใกล้กับอาคาร 8',
+                lat: 17.285973335623478,
+                lng: 104.10631743227361,
+                image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&h=400&fit=crop&crop=center',
+                rooms: ['ห้องปฏิบัติการวิศวกรรม', 'ห้องปฏิบัติการอาหาร', 'ห้องเรียนรวม'],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2540,
+                    floors: 2,
+                    description: 'อาคารสำนักงานบริหารงานหลักของมหาวิทยาลัย'
+                }
+            },
+            {
+                id: 9,
+                name: 'อาคารเรียนเทคโนโลยีสารสนเทศ - อาคาร 9',
+                description: 'อาคารเรียนเทคโนโลยีสารสนเทศ - อาคาร 9',
+                lat: 17.2887325,
+                lng: 104.1084027,
+                image: 'https://images.unsplash.com/photo-1517430419266-3d2b2708b7d4?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องแล็บคอม 1', 'ห้องแล็บคอม 2', 'ห้องเรียน 9301'],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2555,
+                    floors: 4,
+                    description: 'ศูนย์กลางการเรียนรู้ด้านเทคโนโลยีสารสนเทศ'
+                }
+            },
+            {
+                id: 10,
+                name: 'โรงอาหารกลาง - อาคาร 10',
+                description: 'โรงอาหารกลาง - อาคาร 10',
+                lat: 17.2905700,
+                lng: 104.1133761,
+                image: 'https://images.unsplash.com/photo-1541339907198-e087566d925e?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ร้านอาหาร 1', 'ร้านอาหาร 2', 'ที่นั่งพัก'],
+                color: 'marker-color-yellow', // โรงอาหาร: สีเหลือง
+                details: {
+                    year: 2543,
+                    floors: 1,
+                    description: 'ศูนย์รวมร้านอาหารสำหรับนิสิตและบุคลากร'
+                }
+            },
+            {
+                id: 11,
+                name: 'โรงกรองน้ำและหอวิทยาเขต - อาคาร 11',
+                description: 'โรงกรองน้ำและหอวิทยาเขต - อาคาร 11',
+                lat: 17.2839654,
+                lng: 104.1074354,
+                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องควบคุม', 'ห้องปั๊มน้ำ'],
+                color: 'marker-color-red', // อาคารสำคัญ: สีแดง (หรือสีตามที่ต้องการ)
+                details: {
+                    year: 2542,
+                    floors: 1,
+                    description: 'ระบบจัดการน้ำของวิทยาเขต'
+                }
+            },
+            {
+                id: 12,
+                name: 'อาคารสนามกีฬา - อาคาร 12',
+                description: 'อาคารสนามกีฬา - อาคาร 12',
+                lat: 17.2934089,
+                lng: 104.1121748,
+                image: 'https://images.unsplash.com/photo-1560592737-293e43081e7d?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องออกกำลังกาย', 'ห้องเปลี่ยนเสื้อผ้า'],
+                color: 'marker-color-purple', // กีฬา: สีม่วง
+                details: {
+                    year: 2550,
+                    floors: 2,
+                    description: 'ศูนย์รวมกิจกรรมกีฬาในร่ม'
+                }
+            },
+            {
+                id: 13,
+                name: 'พิพิรภัณฑ์องค์ความรู้ - อาคาร 13',
+                description: 'พิพิรภัณฑ์องค์ความรู้ - อาคาร 13',
+                lat: 17.2899884,
+                lng: 104.1146413,
+                image: 'https://images.unsplash.com/photo-1608779148003-8820c78550e5?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องจัดแสดง 1', 'ห้องจัดแสดง 2', 'ห้องบรรยาย'],
+                color: 'marker-color-blue', // อาคารเรียน/วัฒนธรรม: สีน้ำเงิน
+                details: {
+                    year: 2558,
+                    floors: 3,
+                    description: 'แหล่งรวบรวมและจัดแสดงองค์ความรู้ต่างๆ ของมหาวิทยาลัย'
+                }
+            },
+            {
+                id: 14,
+                name: 'หอประชุม - อาคาร 14',
+                description: 'หอประชุม - อาคาร 14',
+                lat: 17.2892831,
+                lng: 104.1128340,
+                image: 'https://images.unsplash.com/photo-1601004126955-d4190c7e289c?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องประชุมใหญ่', 'ห้องซ้อม'],
+                color: 'marker-color-red', // อาคารสำคัญ: สีแดง
+                details: {
+                    year: 2550,
+                    floors: 2,
+                    description: 'สถานที่จัดพิธีสำคัญและกิจกรรมขนาดใหญ่'
+                }
+            },
+            {
+                id: 15,
+                name: 'อาคารถิ่นมั่นในพุทรธรรม - อาคาร 15',
+                description: 'อาคารถิ่นมั่นในพุทรธรรม - อาคาร 15',
+                lat: 17.2864484,
+                lng: 104.1094913,
+                image: 'https://images.unsplash.com/photo-1502422730105-0a701469e3e7?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องปฏิบัติธรรม', 'ห้องบรรยายธรรม'],
+                color: 'marker-color-green', // สถานที่ศาสนา: สีเขียว (หรือสีตามที่ต้องการ)
+                details: {
+                    year: 2550,
+                    floors: 2,
+                    description: 'สถานที่ทำกิจกรรมทางศาสนาและส่งเสริมคุณธรรม'
+                }
+            },
+            {
+                id: 16,
+                name: 'อาคารสถานพยาบาล - อาคาร 16',
+                description: 'อาคารสถานพยาบาล - อาคาร 16',
+                lat: 17.2927747,
+                lng: 104.1154116,
+                image: 'https://images.unsplash.com/photo-1588691880486-7e44a0e41f02?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องตรวจ', 'ห้องพักผู้ป่วย', 'ห้องยา'],
+                color: 'marker-color-red', // สถานพยาบาล: สีแดง
+                details: {
+                    year: 2555,
+                    floors: 2,
+                    description: 'ให้บริการด้านสุขภาพแก่นิสิตและบุคลากร'
+                }
+            },
+            {
+                id: 17,
+                name: 'อาคารชุดพักอาศัยบุคลากร 2 - อาคาร 17',
+                description: 'อาคารชุดพักอาศัยบุคลากร 2 - อาคาร 17',
+                lat: 17.2941967,
+                lng: 104.1177783,
+                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องพัก'],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2552,
+                    floors: 3,
+                    description: 'ที่พักสำหรับบุคลากรของมหาวิทยาลัย'
+                }
+            },
+            {
+                id: 18,
+                name: 'หอพักนิสิตหญิงตาลฟ้า - อาคาร 18',
+                description: 'หอพักนิสิตหญิงตาลฟ้า - อาคาร 18',
+                lat: 17.2957605,
+                lng: 104.1185870,
+                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องพัก'],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2555,
+                    floors: 4,
+                    description: 'หอพักสำหรับนิสิตหญิง'
+                }
+            },
+            {
+                id: 19,
+                name: 'อาคารสนามกีฬาใหม่ (ยิม) - อาคาร 19',
+                description: 'อาคารสนามกีฬาใหม่ (ยิม) - อาคาร 19',
+                lat: 17.2908236,
+                lng: 104.1149563,
+                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['สนามบาส', 'สนามวอลเลย์บอล', 'ห้องเวท'],
+                color: 'marker-color-purple', // กีฬา: สีม่วง
+                details: {
+                    year: 2560,
+                    floors: 1,
+                    description: 'ศูนย์กีฬาในร่มสำหรับนิสิต'
+                }
+            },
+            {
+                id: 20,
+                name: 'อาคารสังคมศาสตร์และวิทยาศาสตร์สุขภาพ - อาคาร 20',
+                description: 'อาคารสังคมศาสตร์และวิทยาศาสตร์สุขภาพ - อาคาร 20',
+                lat: 17.2925775,
+                lng: 104.1111476,
+                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องเรียน 2001', 'ห้องเรียน 2002', 'ห้องสัมมนา'],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2562,
+                    floors: 4,
+                    description: 'ศูนย์รวมการเรียนการสอนด้านสังคมศาสตร์และสุขภาพ'
+                }
+            },
+            {
+                id: 21,
+                name: 'อาคารวิทยาศาสตร์และเทคโนโลยี 2 - อาคาร 21',
+                description: 'อาคารวิทยาศาสตร์และเทคโนโลยี 2 - อาคาร 21',
+                lat: 17.2868242,
+                lng: 104.1073107,
+                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องปฏิบัติการ A', 'ห้องปฏิบัติการ B'],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2565,
+                    floors: 3,
+                    description: 'อาคารปฏิบัติการเฉพาะทางวิทยาศาสตร์'
+                }
+            },
+            {
+                id: 22,
+                name: 'อาคารวิทยาศาสตร์และเทคโนโลยี 3 - อาคาร 22',
+                description: 'อาคารวิทยาศาสตร์และเทคโนโลยี 3 - อาคาร 22',
+                lat: 17.2876130,
+                lng: 104.1072983,
+                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                rooms: ['ห้องวิจัย 1', 'ห้องวิจัย 2'],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2567,
+                    floors: 3,
+                    description: 'อาคารวิจัยและพัฒนาขั้นสูง'
+                }
+            }
+        ];
+
+        // Initialize Map
+        // Central coordinates for Sakon Nakhon Campus
+        const centerCoords = [17.29154, 104.11207]; 
+        const map = L.map('map').setView(centerCoords, 15);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Store markers
+        const markers = {};
+
+        // 1. Update Add markers to use custom icons with colors
+        buildings.forEach(building => {
+            const customIcon = createCustomIcon(building.color || 'marker-color-blue'); // ใช้สีที่กำหนด หรือ default เป็นสีน้ำเงิน
+            
+            const marker = L.marker([building.lat, building.lng], { icon: customIcon })
+                .addTo(map)
+                .bindPopup(`<b>${building.name}</b><br>${building.description}`)
+                .on('click', () => showBuildingModal(building));
+            
+            markers[building.id] = marker;
+        });
+
+        // Generate buildings list (No change needed here, as it uses the existing data)
+        function generateBuildingsList() {
+            const buildingsList = document.getElementById('buildingsList');
+            buildingsList.innerHTML = '';
+            
+            buildings.forEach(building => {
+                const buildingItem = document.createElement('div');
+                buildingItem.className = 'building-item';
+                buildingItem.innerHTML = `
+                    <div class="building-name">${building.name}</div>
+                    <div class="building-desc">${building.description}</div>
+                `;
+                buildingItem.addEventListener('click', () => {
+                    map.setView([building.lat, building.lng], 18);
+                    markers[building.id].openPopup();
+                    showBuildingModal(building);
+                });
+                buildingsList.appendChild(buildingItem);
+            });
+        }
+
+        // Show building modal
+        function showBuildingModal(building) {
+            const modal = document.getElementById('buildingModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = building.name;
+            
+            // 🐛 FIX 1: Corrected Google Maps URL format to use standard 'q' parameter for navigation/search
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${building.lat},${building.lng}`;
+            
+            // 2. ปรับปรุง modalBody เพื่อเพิ่มช่องใส่ภาพ
+            const imageHtml = building.image && building.image.trim() !== '' 
+                ? `<div class="building-image-container"><img src="${building.image}" alt="${building.name}" class="building-image"></div>`
+                : `<div class="building-image-placeholder">🖼️ ไม่มีรูปภาพตัวอย่าง</div>`;
+            
+            // 1. สร้าง HTML สำหรับภาพอาคารหลัก (ขนาดใหญ่)
+const mainImageHtml = building.image && building.image.trim() !== '' 
+    ? `<div class="building-image-container"><img src="${building.image}" alt="${building.name}" class="building-image"></div>`
+    : `<div class="building-image-placeholder">🖼️ ไม่มีรูปภาพตัวอย่างหลัก</div>`;
+
+            // 2. สร้าง HTML สำหรับภาพผังอาคาร (ช่องภาพเล็กๆ)
+            const floorPlanHtml = building.floor_plan_image && building.floor_plan_image.trim() !== ''
+                ? `
+                    <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #f0f0f0;">
+                        <h4>🗺️ ผังอาคาร</h4>
+                        <img 
+                            src="${building.floor_plan_image}" 
+                            alt="ผังอาคาร ${building.name}"
+                            style="width: 120px; height: auto; border-radius: 3px; box-shadow: 0 0 5px rgba(0,0,0,0.1);" 
+                        />
+                    </div>
+                `
+                : ''; // ถ้าไม่มี URL ผังอาคาร ก็ไม่แสดงผล
+
+            modalBody.innerHTML = `
+                ${mainImageHtml} 
+
+                <div class="building-details">
+                    <h4>รายละเอียด</h4>
+                    <p><strong>ปีที่สร้าง:</strong> ${building.details.year || 'N/A'}</p>
+                    <p><strong>จำนวนชั้น:</strong> ${building.details.floors || 'N/A'} ชั้น</p>
+                    <p><strong>คำอธิบาย:</strong> ${building.details.description || 'ไม่มีคำอธิบายเพิ่มเติม'}</p>
+                </div>
+                
+                ${floorPlanHtml} 
+
+                <div class="rooms-section">
+                    <h4>รายชื่อห้อง</h4>
+                    <div class="rooms-grid">
+                        ${building.rooms && building.rooms.length > 0 && building.rooms[0].trim() !== ''
+                            ? building.rooms.map(room => `<div class="room-item">${room}</div>`).join('')
+                            : `<div class="room-item" style="grid-column: 1 / -1; background: #ffebee; color: #d32f2f;">ไม่มีข้อมูลห้อง</div>`
+                        }
+                    </div>
+                </div>
+                <button class="navigation-btn" onclick="window.open('${googleMapsUrl}', '_blank')">
+                    🗺️ เปิด Google Maps เพื่อนำทาง
+                </button>
+            `;
+                        
+            modal.style.display = 'block';
+        }
+
+        // Search functionality (No change needed here, it works with the existing data structure)
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                
+                if (query.length === 0) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                const results = [];
+                
+                buildings.forEach(building => {
+                    // Search in building name
+                    if (building.name.toLowerCase().includes(query)) {
+                        results.push({
+                            type: 'building',
+                            text: building.name,
+                            building: building
+                        });
+                    }
+                    
+                    // Search in rooms
+                    building.rooms.forEach(room => {
+                        if (room.toLowerCase().includes(query)) {
+                            // Check for duplicates before pushing (searching room in building name)
+                            if (!results.find(r => r.type === 'room' && r.text.includes(room))) {
+                                results.push({
+                                    type: 'room',
+                                    text: `${room} (${building.name})`,
+                                    building: building
+                                });
+                            }
+                        }
+                    });
+                });
+                
+                searchResults.innerHTML = '';
+                
+                if (results.length > 0) {
+                    results.slice(0, 10).forEach(result => { // Limit to 10 results
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'search-result-item';
+                        resultItem.textContent = result.text;
+                        resultItem.addEventListener('click', () => {
+                            map.setView([result.building.lat, result.building.lng], 18);
+                            markers[result.building.id].openPopup();
+                            showBuildingModal(result.building);
+                            searchInput.value = result.building.name;
+                            searchResults.style.display = 'none';
+                        });
+                        searchResults.appendChild(resultItem);
+                    });
+                    searchResults.style.display = 'block';
+                } else {
+                    searchResults.innerHTML = '<div class="search-result-item" style="color:#aaa;">ไม่พบผลลัพธ์</div>';
+                    searchResults.style.display = 'block';
+                }
+            });
+            
+            // Hide results when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+
+        // Close Modal Functionality
+        const modal = document.getElementById('buildingModal');
+        const span = document.getElementsByClassName('close')[0];
+
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Initial calls
+        generateBuildingsList();
+        setupSearch();
+
+        // 🐛 FIX 2: Fixed map tile loading issue by calling invalidateSize to force map recalculation
+        map.invalidateSize();
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 300); // Keep setTimeout as a fallback
+    </script>
+</body>
+</html>
