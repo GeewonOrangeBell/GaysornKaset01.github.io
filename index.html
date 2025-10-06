@@ -13,18 +13,15 @@
             box-sizing: border-box;
         }
 
-        /* 1. เพิ่มพื้นหลังของเว็บเป็นภาพจางๆ */
         body {
             font-family: 'Prompt', sans-serif;
-            /* Background changed to a solid color or a very subtle pattern if needed, but the image background is added globally below */
-            background-color: #408b22; /* Fallback color */
+            background-color: #408b22;
             min-height: 100vh;
             overflow-x: hidden;
-            position: relative; /* Needed for the absolute positioned overlay */
+            position: relative;
             z-index: 1;
         }
 
-        /* Background Image with Low Opacity */
         body::before {
             content: "";
             position: fixed;
@@ -32,16 +29,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            /* 💡 เปลี่ยน URL รูปภาพตรงนี้ */
             background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs_jpv3W6sfyxnjbRFrObdYZuFQdgHUfNoAg&s'); 
             background-size: cover;
             background-position: center;
-            opacity: 0.1; /* Opacity จางๆ */
-            z-index: -1; /* Ensure it's behind everything */
-            pointer-events: none; /* Allows interaction with elements underneath */
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
         }
         
-        /* Apply a slight gradient overlay to maintain readability over the content */
         .container {
             max-width: 1200px;
             margin: 2rem auto;
@@ -50,12 +45,11 @@
             grid-template-columns: 350px 1fr;
             gap: 2rem;
             height: calc(100vh - 140px);
-            position: relative; /* Context for children */
+            position: relative;
         }
 
-        /* Header Styles */
         .header {
-            background: rgba(64, 139, 34, 0.8); /* Adjusted header background for better contrast with new body background */
+            background: rgba(64, 139, 34, 0.8);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             padding: 1rem;
@@ -242,7 +236,6 @@
             opacity: 0.8;
         }
 
-        /* Map Container */
         .map-container {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
@@ -257,7 +250,6 @@
             border-radius: 20px;
         }
 
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -321,20 +313,18 @@
         }
 
         .building-image-container {
-             /* 2. เพิ่มช่องใส่ภาพ ตรงจุดที่ก่อนจะถึง room/รายชื่อห้อง */
             text-align: center;
             margin-bottom: 1.5rem;
         }
 
         .building-image {
             width: 100%;
-            max-height: 300px; /* Increased max-height for better visual */
+            max-height: 300px;
             object-fit: cover;
             border-radius: 15px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
         
-        /* New Style for Image Placeholder */
         .building-image-placeholder {
             width: 100%;
             height: 250px;
@@ -420,32 +410,22 @@
             box-shadow: 0 12px 30px rgba(76, 175, 80, 0.4);
         }
 
-        /* Custom Marker Styles (Base) */
         .custom-marker {
             width: 40px;
             height: 40px;
-            border-radius: 50% 50% 50% 0; /* รูปทรงหยดน้ำแบบเดิม */
+            border-radius: 50% 50% 50% 0;
             border: 3px solid white;
-            /* ****************************************************** */
-            /* ** ลบการหมุน -45deg ออกเพื่อให้ชี้ลงมาตรงๆ ** */
-            /* ****************************************************** */
-            transform: rotate(0deg); /* เปลี่ยนจาก -45deg เป็น 0deg */
+            transform: rotate(0deg);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             cursor: pointer;
             transition: all 0.3s ease;
-            /* ****************************************************** */
-            /* ** ลบโค้ด ::after ที่สร้างหางซ้อนทับออก ** */
-            /* (ถ้าคุณเคยเพิ่มโค้ดนี้ ให้ลบทิ้งทั้งหมด) */
-            /* ****************************************************** */
         }
 
         .custom-marker:hover {
-            /* ** ลบการหมุน -45deg ออกเพื่อให้ชี้ลงมาตรงๆ ** */
-            transform: rotate(0deg) scale(1.1); /* เปลี่ยนจาก -45deg เป็น 0deg */
+            transform: rotate(0deg) scale(1.1);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
         }
         
-        /* Custom Marker Colors (User Assignable) */
         .marker-color-blue {
             background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); /* Default Blue */
             box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
@@ -468,7 +448,6 @@
         }
 
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
@@ -611,21 +590,15 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Custom Marker Icon Creator Function
         function createCustomIcon(colorClass) {
             return L.divIcon({
                 className: `custom-marker ${colorClass}`,
                 iconSize: [40, 40], 
-                // *******************************************************
-                // ** แก้ไขค่า iconAnchor และ popupAnchor ใหม่ **
-                // *******************************************************
-                iconAnchor: [20, 39], // X = 20 (กึ่งกลางความกว้าง), Y = 39 (เกือบสุดขอบล่าง)
-                popupAnchor: [0, -40] // เลื่อน Popup ขึ้นไปเหนือหมุด 40px
+                iconAnchor: [20, 39],
+                popupAnchor: [0, -40]
             });
         }
     
-        // Buildings Data
-        // 1. เพิ่ม property 'color' ในข้อมูลอาคาร
         const buildings = [
             {
                 id: 1,
@@ -634,10 +607,9 @@
                 lat: 17.288649996555456,
                 lng: 104.11515437247861,
                 image: 'https://occ.csc.ku.ac.th/wp-content/uploads/2016/10/building1-1.jpg',
-                // เพิ่ม Field สำหรับภาพผังอาคารตรงนี้
-                floor_plan_image: 'https://tse1.mm.bing.net/th/id/OIP.p6kcPHzNMoBMBOeM3qiR5gHaNJ?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3', // <--- เพิ่มบรรทัดนี้
+                floor_plan_image: 'https://tse1.mm.bing.net/th/id/OIP.p6kcPHzNMoBMBOeM3qiR5gHaNJ?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3',
                 rooms: ['1-101', '1-102', '1-103', '1-201', '1-202', '1-203', 'ห้องประชุมใหญ่', 'ห้องคอมพิวเตอร์ 1'],
-                color: 'marker-color-red', // อาคารบริหาร: สีแดง
+                color: 'marker-color-red',
                 details: {
                     year: 2545,
                     floors: 4,
@@ -651,6 +623,7 @@
                 lat: 17.29079330402039,
                 lng: 104.11008906023095,
                 image: 'https://images.unsplash.com/photo-1581092162384-8987c1d64718?w=600&h=400&fit=crop&crop=center',
+                floor_plan_image: '',
                 rooms: ['2-101', '2-102', 'ห้องปฏิบัติการฟิสิกส์', 'ห้องปฏิบัติการเคมี', '2-201', '2-202', '2-301'],
                 color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
                 details: {
@@ -723,8 +696,8 @@
                 id: 7,
                 name: 'อาคารวิทยาศาสตร์และเทคโนโลยี - อาคาร 7',
                 description: 'อยู่ใกล้กับอาคาร 7',
-                lat: 17.285973335623478, // <-- This coordinate is IDENTICAL to Building 6's. This is a data issue.
-                lng: 104.10631743227361, // <-- This coordinate is IDENTICAL to Building 6's. This is a data issue.
+                lat: 17.286263350715032,
+                lng: 104.10658173051651,
                 image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/goody-67-1078x516.jpg',
                 rooms: ['สำนักงานคณบดี', 'สำนักงานแผนกการเงิน', 'ห้องประชุมวิโรจอิ่มพิทักษ์', 'สำนักงานทรัพยากรบุคคล', 'ห้องรับรอง'],
                 color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
@@ -740,7 +713,7 @@
                 description: 'อยู่ใกล้กับอาคาร 8',
                 lat: 17.285973335623478,
                 lng: 104.10631743227361,
-                image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&h=400&fit=crop&crop=center',
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC00518-1078x516.jpg',
                 rooms: ['ห้องปฏิบัติการวิศวกรรม', 'ห้องปฏิบัติการอาหาร', 'ห้องเรียนรวม'],
                 color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
                 details: {
@@ -755,7 +728,7 @@
                 description: 'อาคารเรียนเทคโนโลยีสารสนเทศ - อาคาร 9',
                 lat: 17.2887325,
                 lng: 104.1084027,
-                image: 'https://images.unsplash.com/photo-1517430419266-3d2b2708b7d4?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/P1020785-1078x516.jpg',
                 rooms: ['ห้องแล็บคอม 1', 'ห้องแล็บคอม 2', 'ห้องเรียน 9301'],
                 color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
                 details: {
@@ -770,7 +743,7 @@
                 description: 'โรงอาหารกลาง - อาคาร 10',
                 lat: 17.2905700,
                 lng: 104.1133761,
-                image: 'https://images.unsplash.com/photo-1541339907198-e087566d925e?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/P1010738-1078x516.jpg',
                 rooms: ['ร้านอาหาร 1', 'ร้านอาหาร 2', 'ที่นั่งพัก'],
                 color: 'marker-color-yellow', // โรงอาหาร: สีเหลือง
                 details: {
@@ -785,7 +758,7 @@
                 description: 'โรงกรองน้ำและหอวิทยาเขต - อาคาร 11',
                 lat: 17.2839654,
                 lng: 104.1074354,
-                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_01091-1078x516.jpg',
                 rooms: ['ห้องควบคุม', 'ห้องปั๊มน้ำ'],
                 color: 'marker-color-red', // อาคารสำคัญ: สีแดง (หรือสีตามที่ต้องการ)
                 details: {
@@ -800,7 +773,7 @@
                 description: 'อาคารสนามกีฬา - อาคาร 12',
                 lat: 17.2934089,
                 lng: 104.1121748,
-                image: 'https://images.unsplash.com/photo-1560592737-293e43081e7d?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/IMG_1191-1078x516.jpg',
                 rooms: ['ห้องออกกำลังกาย', 'ห้องเปลี่ยนเสื้อผ้า'],
                 color: 'marker-color-purple', // กีฬา: สีม่วง
                 details: {
@@ -815,7 +788,7 @@
                 description: 'พิพิรภัณฑ์องค์ความรู้ - อาคาร 13',
                 lat: 17.2899884,
                 lng: 104.1146413,
-                image: 'https://images.unsplash.com/photo-1608779148003-8820c78550e5?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/IMG_9398-1078x516.jpg',
                 rooms: ['ห้องจัดแสดง 1', 'ห้องจัดแสดง 2', 'ห้องบรรยาย'],
                 color: 'marker-color-blue', // อาคารเรียน/วัฒนธรรม: สีน้ำเงิน
                 details: {
@@ -830,7 +803,7 @@
                 description: 'หอประชุม - อาคาร 14',
                 lat: 17.2892831,
                 lng: 104.1128340,
-                image: 'https://images.unsplash.com/photo-1601004126955-d4190c7e289c?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/goody-78-1078x516.jpg',
                 rooms: ['ห้องประชุมใหญ่', 'ห้องซ้อม'],
                 color: 'marker-color-red', // อาคารสำคัญ: สีแดง
                 details: {
@@ -845,7 +818,7 @@
                 description: 'อาคารถิ่นมั่นในพุทรธรรม - อาคาร 15',
                 lat: 17.2864484,
                 lng: 104.1094913,
-                image: 'https://images.unsplash.com/photo-1502422730105-0a701469e3e7?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_01031-1078x516.jpg', // เพิ่มรูปภาพ placeholder
                 rooms: ['ห้องปฏิบัติธรรม', 'ห้องบรรยายธรรม'],
                 color: 'marker-color-green', // สถานที่ศาสนา: สีเขียว (หรือสีตามที่ต้องการ)
                 details: {
@@ -860,7 +833,7 @@
                 description: 'อาคารสถานพยาบาล - อาคาร 16',
                 lat: 17.2927747,
                 lng: 104.1154116,
-                image: 'https://images.unsplash.com/photo-1588691880486-7e44a0e41f02?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/goody-3-1078x516.jpg',
                 rooms: ['ห้องตรวจ', 'ห้องพักผู้ป่วย', 'ห้องยา'],
                 color: 'marker-color-red', // สถานพยาบาล: สีแดง
                 details: {
@@ -875,7 +848,7 @@
                 description: 'อาคารชุดพักอาศัยบุคลากร 2 - อาคาร 17',
                 lat: 17.2941967,
                 lng: 104.1177783,
-                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_0148-1078x516.jpg',
                 rooms: ['ห้องพัก'],
                 color: 'marker-color-green', // ที่พัก: สีเขียว
                 details: {
@@ -890,7 +863,7 @@
                 description: 'หอพักนิสิตหญิงตาลฟ้า - อาคาร 18',
                 lat: 17.2957605,
                 lng: 104.1185870,
-                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_0184-1078x516.jpg',
                 rooms: ['ห้องพัก'],
                 color: 'marker-color-green', // ที่พัก: สีเขียว
                 details: {
@@ -905,7 +878,7 @@
                 description: 'อาคารสนามกีฬาใหม่ (ยิม) - อาคาร 19',
                 lat: 17.2908236,
                 lng: 104.1149563,
-                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://drive.google.com/file/d/1qf9n2G9H9nkEwSdk8OQ7B67w_uH9oscC/view?usp=sharing',
                 rooms: ['สนามบาส', 'สนามวอลเลย์บอล', 'ห้องเวท'],
                 color: 'marker-color-purple', // กีฬา: สีม่วง
                 details: {
@@ -920,7 +893,7 @@
                 description: 'อาคารสังคมศาสตร์และวิทยาศาสตร์สุขภาพ - อาคาร 20',
                 lat: 17.2925775,
                 lng: 104.1111476,
-                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2021/02/DJI_002031-1078x516.jpg',
                 rooms: ['ห้องเรียน 2001', 'ห้องเรียน 2002', 'ห้องสัมมนา'],
                 color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
                 details: {
@@ -935,7 +908,7 @@
                 description: 'อาคารวิทยาศาสตร์และเทคโนโลยี 2 - อาคาร 21',
                 lat: 17.2868242,
                 lng: 104.1073107,
-                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2021/02/IMG_9577-Pano-Edit-1078x516.jpg',
                 rooms: ['ห้องปฏิบัติการ A', 'ห้องปฏิบัติการ B'],
                 color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
                 details: {
@@ -950,7 +923,7 @@
                 description: 'อาคารวิทยาศาสตร์และเทคโนโลยี 3 - อาคาร 22',
                 lat: 17.2876130,
                 lng: 104.1072983,
-                image: 'https://images.unsplash.com/photo-1582213782170-652b4cc4c489?w=600&h=400&fit=crop&crop=center', // เพิ่มรูปภาพ placeholder
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2021/02/IMG_9606-351x185.jpg',
                 rooms: ['ห้องวิจัย 1', 'ห้องวิจัย 2'],
                 color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
                 details: {
@@ -966,18 +939,15 @@
         const centerCoords = [17.29154, 104.11207]; 
         const map = L.map('map').setView(centerCoords, 15);
 
-        // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(map);
 
-        // Store markers
         const markers = {};
 
-        // 1. Update Add markers to use custom icons with colors
         buildings.forEach(building => {
-            const customIcon = createCustomIcon(building.color || 'marker-color-blue'); // ใช้สีที่กำหนด หรือ default เป็นสีน้ำเงิน
+            const customIcon = createCustomIcon(building.color || 'marker-color-blue');
             
             const marker = L.marker([building.lat, building.lng], { icon: customIcon })
                 .addTo(map)
@@ -1008,7 +978,6 @@
             });
         }
 
-        // Show building modal
         function showBuildingModal(building) {
             const modal = document.getElementById('buildingModal');
             const modalTitle = document.getElementById('modalTitle');
@@ -1019,17 +988,14 @@
             // 🐛 FIX 1: Corrected Google Maps URL format to use standard 'q' parameter for navigation/search
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${building.lat},${building.lng}`;
             
-            // 2. ปรับปรุง modalBody เพื่อเพิ่มช่องใส่ภาพ
             const imageHtml = building.image && building.image.trim() !== '' 
                 ? `<div class="building-image-container"><img src="${building.image}" alt="${building.name}" class="building-image"></div>`
                 : `<div class="building-image-placeholder">🖼️ ไม่มีรูปภาพตัวอย่าง</div>`;
             
-            // 1. สร้าง HTML สำหรับภาพอาคารหลัก (ขนาดใหญ่)
 const mainImageHtml = building.image && building.image.trim() !== '' 
     ? `<div class="building-image-container"><img src="${building.image}" alt="${building.name}" class="building-image"></div>`
     : `<div class="building-image-placeholder">🖼️ ไม่มีรูปภาพตัวอย่างหลัก</div>`;
 
-            // 2. สร้าง HTML สำหรับภาพผังอาคาร (ช่องภาพเล็กๆ)
             const floorPlanHtml = building.floor_plan_image && building.floor_plan_image.trim() !== ''
                 ? `
                     <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #f0f0f0;">
@@ -1072,7 +1038,6 @@ const mainImageHtml = building.image && building.image.trim() !== ''
             modal.style.display = 'block';
         }
 
-        // Search functionality (No change needed here, it works with the existing data structure)
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
             const searchResults = document.getElementById('searchResults');
@@ -1088,7 +1053,6 @@ const mainImageHtml = building.image && building.image.trim() !== ''
                 const results = [];
                 
                 buildings.forEach(building => {
-                    // Search in building name
                     if (building.name.toLowerCase().includes(query)) {
                         results.push({
                             type: 'building',
@@ -1157,15 +1121,13 @@ const mainImageHtml = building.image && building.image.trim() !== ''
             }
         }
         
-        // Initial calls
         generateBuildingsList();
         setupSearch();
 
-        // 🐛 FIX 2: Fixed map tile loading issue by calling invalidateSize to force map recalculation
         map.invalidateSize();
         setTimeout(() => {
             map.invalidateSize();
-        }, 300); // Keep setTimeout as a fallback
+        }, 300);
     </script>
 </body>
 </html>
