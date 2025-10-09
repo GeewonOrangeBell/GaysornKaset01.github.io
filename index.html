@@ -368,7 +368,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             gap: 0.75rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
 
         .room-item {
@@ -408,6 +408,25 @@
             background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
             transform: translateY(-2px);
             box-shadow: 0 12px 30px rgba(76, 175, 80, 0.4);
+        }
+
+        .show-all-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 500;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+
+        .show-all-btn:hover {
+            background: #e9ecef;
+            border-color: #ced4da;
         }
 
         .custom-marker {
@@ -704,7 +723,22 @@
                 lng: 104.10658173051651,
                 image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/goody-67-1078x516.jpg',
                 floor_plan_image: '',
-                rooms: ['สำนักงานคณบดี', 'สำนักงานแผนกการเงิน', 'ห้องประชุมวิโรจอิ่มพิทักษ์', 'สำนักงานทรัพยากรบุคคล', 'ห้องรับรอง'],
+                rooms:                 
+                [
+                '7 – 101', '7 – 102', '7 – 103', '7 – 104', '7 – 105', '7 – 106', '7 – 107', '7 – 108', 
+                '7 – 109', '7 – 110', '7 – 111', '7 – 112', '7 – 112/1', '7 – 112/2', '7 – 112/3', '7 – 112/4', 
+                '7 – 112/5', '7 – 112/6', '7 – 112/7', '7 – 112/8', '7 – 112/9', '7 – 112/10', '7 – 201', 
+                '7 – 202', '7 – 203', '7 – 204', '7 – 205', '7 – 206', '7 – 207', '7 – 208', '7 – 209', 
+                '7 – 210', '7 – 211–6', '7 – 212', '7 – 212/1–2', '7 – 213', '7 – 214', '7 – 215', '7 – 216', 
+                '7 – 217/1–B', '7 – 218', '7 – 219', '7 – 220', '7 – 221', '7 – 222', '7 – 223', '7 – 224', 
+                '7 – 225', '7 – 226', '7 – 301', '7 – 302', '7 – 303', '7 – 304', '7 – 305', '7 – 306', 
+                '7 – 307', '7 – 308', '7 – 309', '7 – 310', '7 – 311', '7 – 312', '7 – 313', '7 – 314', 
+                '7 – 315', '7 – 316', '7 – 317/1–B', '7 – 318', '7 – 319', '7 – 320', '7 – 321', '7 – 322', 
+                '7 – 323', '7 – 401', '7 – 402', '7 – 403', '7 – 404', '7 – 405', '7 – 406', '7 – 407', 
+                '7 – 408', '7 – 409', '7 – 410', '7 – 411', '7 – 412', '7 – 413', '7 – 414', '7 – 415', 
+                '7 – 416', '7 – 417/1–8', '7 – 418', '7 – 419', '7 – 420', '7 – 421', '7 – 422', '7 – 423', 
+                '7 – 423/1', '7 – 423/2', '7 – 423/3', '7 – 423/4'
+                ],
                 color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
                 details: {
                     year: 2540,
@@ -1002,32 +1036,69 @@
             const modal = document.getElementById('buildingModal');
             const modalTitle = document.getElementById('modalTitle');
             const modalBody = document.getElementById('modalBody');
-            
+
             modalTitle.textContent = building.name;
             
-            // 🐛 FIX 1: Corrected Google Maps URL format to use standard 'q' parameter for navigation/search
-            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${building.lat},${building.lng}`;
-            
-            const imageHtml = building.image && building.image.trim() !== '' 
+            // ✅ FIX: Corrected Google Maps URL for proper navigation query
+            const googleMapsUrl = `https://www.google.com/maps?q=${building.lat},${building.lng}`;
+
+            const mainImageHtml = building.image && building.image.trim() !== '' 
                 ? `<div class="building-image-container"><img src="${building.image}" alt="${building.name}" class="building-image"></div>`
                 : `<div class="building-image-placeholder">🖼️ ไม่มีรูปภาพตัวอย่าง</div>`;
             
-const mainImageHtml = building.image && building.image.trim() !== '' 
-    ? `<div class="building-image-container"><img src="${building.image}" alt="${building.name}" class="building-image"></div>`
-    : `<div class="building-image-placeholder">🖼️ ไม่มีรูปภาพตัวอย่างหลัก</div>`;
-
             const floorPlanHtml = building.floor_plan_image && building.floor_plan_image.trim() !== ''
                 ? `
-                    <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #f0f0f0;">
-                        <h4>🗺️ ผังอาคาร</h4>
+                    <div style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #ddd; border-radius: 15px; background-color: #f8f9fa;">
+                        <h4 style="margin-bottom: 0.75rem; color: #1e3c72;">🗺️ ผังอาคาร</h4>
                         <img 
                             src="${building.floor_plan_image}" 
                             alt="ผังอาคาร ${building.name}"
-                            style="width: 120px; height: auto; border-radius: 3px; box-shadow: 0 0 5px rgba(0,0,0,0.1);" 
+                            style="width: 100%; max-width: 200px; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: block; margin: 0 auto;" 
                         />
                     </div>
                 `
-                : ''; // ถ้าไม่มี URL ผังอาคาร ก็ไม่แสดงผล
+                : '';
+
+            // --- ✨ NEW: Room list display logic ---
+            let roomsHtml = '';
+            const hasRooms = building.rooms && building.rooms.length > 0 && building.rooms[0].trim() !== '';
+
+            if (hasRooms) {
+                const rooms = building.rooms;
+                if (rooms.length > 6) {
+                    // Show first 6 items and a "Show All" button
+                    const initialRooms = rooms.slice(0, 6).map(room => `<div class="room-item">${room}</div>`).join('');
+                    const allRoomsHtml = rooms.map(room => `<div class="room-item">${room}</div>`).join('');
+                    const allRoomsJson = JSON.stringify(allRoomsHtml);
+
+                    roomsHtml = `
+                        <div class="rooms-grid" id="roomsGridContainer">
+                            ${initialRooms}
+                        </div>
+                        <button class="show-all-btn" id="showAllRoomsBtn" onclick='
+                            document.getElementById("roomsGridContainer").innerHTML = ${allRoomsJson};
+                            this.style.display = "none";
+                        '>
+                            แสดงทั้งหมด (${rooms.length} ห้อง)
+                        </button>
+                    `;
+                } else {
+                    // Show all rooms if there are 6 or fewer
+                    roomsHtml = `
+                        <div class="rooms-grid">
+                            ${rooms.map(room => `<div class="room-item">${room}</div>`).join('')}
+                        </div>
+                    `;
+                }
+            } else {
+                // Display message if no room data is available
+                roomsHtml = `
+                    <div class="rooms-grid">
+                        <div class="room-item" style="grid-column: 1 / -1; background: #ffebee; color: #d32f2f;">ไม่มีข้อมูลห้อง</div>
+                    </div>
+                `;
+            }
+            // --- End of new logic ---
 
             modalBody.innerHTML = `
                 ${mainImageHtml} 
@@ -1039,20 +1110,18 @@ const mainImageHtml = building.image && building.image.trim() !== ''
                     <p><strong>คำอธิบาย:</strong> ${building.details.description || 'ไม่มีคำอธิบายเพิ่มเติม'}</p>
                 </div>
                 
+                <button class="navigation-btn" 
+                    style="margin-bottom: 2rem;" 
+                    onclick="window.open('${googleMapsUrl}', '_blank')">
+                    🗺️ เปิด Google Maps เพื่อนำทาง
+                </button>
+
                 ${floorPlanHtml} 
 
                 <div class="rooms-section">
                     <h4>รายชื่อห้อง</h4>
-                    <div class="rooms-grid">
-                        ${building.rooms && building.rooms.length > 0 && building.rooms[0].trim() !== ''
-                            ? building.rooms.map(room => `<div class="room-item">${room}</div>`).join('')
-                            : `<div class="room-item" style="grid-column: 1 / -1; background: #ffebee; color: #d32f2f;">ไม่มีข้อมูลห้อง</div>`
-                        }
-                    </div>
+                    ${roomsHtml}
                 </div>
-                <button class="navigation-btn" onclick="window.open('${googleMapsUrl}', '_blank')">
-                    🗺️ เปิด Google Maps เพื่อนำทาง
-                </button>
             `;
                         
             modal.style.display = 'block';
