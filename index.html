@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผนที่มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตสกลนคร</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #0D1F22;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs_jpv3W6sfyxnjbRFrObdYZuFQdgHUfNoAg&s'); 
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            height: calc(100vh - 140px);
+            position: relative;
+        }
+
+        .header {
+            background: #306B34;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            object-position: 70% center;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .title-section h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .contact-info {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .social-links a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .social-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            height: calc(100vh - 140px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1.5rem;
+            height: fit-content;
+            max-height: 100%;
+            overflow-y: auto;
+        }
+
+        .search-section {
+            margin-bottom: 2rem;
+        }
+
+        .search-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            font-family: 'Prompt', sans-serif; /* Changed Sarabun to Prompt for consistency */
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            background: white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .search-results {
+            background: white;
+            border-radius: 10px;
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-result-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: #f8f9fa;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Building List */
+        .buildings-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .building-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .building-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .building-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .building-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .map-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        #map {
+            height: 100%;
+            min-height: 500px;
+            border-radius: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 25px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 25px 25px 0 0;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .building-image-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .building-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .building-image-placeholder {
+            width: 100%;
+            height: 250px;
+            border-radius: 15px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+
+        .building-details {
+            margin-bottom: 2rem;
+        }
+
+        .building-details h4 {
+            color: #1e3c72;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .building-details p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .rooms-section h4 {
+            color: #1e3c72;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .room-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 0.75rem;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+        }
+
+        .room-item:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .navigation-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Prompt', sans-serif; /* Changed Sarabun to Prompt for consistency */
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .navigation-btn:hover {
+            background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(76, 175, 80, 0.4);
+        }
+
+        .show-all-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 500;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+
+        .show-all-btn:hover {
+            background: #e9ecef;
+            border-color: #ced4da;
+        }
+
+        .custom-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50% 50% 50% 0;
+            border: 3px solid white;
+            transform: rotate(0deg);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .custom-marker:hover {
+            transform: rotate(0deg) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .marker-color-blue {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); /* Default Blue */
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        .marker-color-red {
+            background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%); /* Red for Admin */
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+        .marker-color-green {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); /* Green for Dorms/Housing */
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        .marker-color-yellow {
+            background: linear-gradient(135deg, #FFC107 0%, #FFA000 100%); /* Yellow for Food/Canteen */
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+        }
+        .marker-color-purple {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%); /* Purple for Sports/Gym */
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+        }
+
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                height: auto;
+            }
+            
+            .sidebar {
+                order: 2;
+                max-height: 400px;
+            }
+            
+            .map-container {
+                order: 1;
+                height: 400px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .social-links {
+                justify-content: center;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 1% auto;
+            }
+            
+            .modal-header {
+                padding: 1.5rem;
+            }
+            
+            .modal-body {
+                padding: 1.5rem;
+            }
+            
+            .rooms-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 0.5rem;
+            }
+            
+            .title-section h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/%E0%B8%87%E0%B8%B2%E0%B8%99%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%8A%E0%B8%B2%E0%B8%AA%E0%B8%B1%E0%B8%A1%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B8%98%E0%B9%8C-%E0%B8%A1%E0%B8%81-%E0%B8%89%E0%B8%81%E0%B8%AA-326-702x336.jpg" 
+                     alt="KU Logo" class="logo">
+                <div class="title-section">
+                    <h1>มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตสกลนคร</h1>
+                    <div class="contact-info">
+                        📞 โทร: 042 725 042
+                    </div>
+                </div>
+            </div>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/KasetsartUniversity" class="social-link" target="_blank">Facebook</a>
+                    <a href="https://www.youtube.com/@KUCSCChannel" class="social-link" target="_blank">YouTube</a>
+                    <a href="https://www.instagram.com/kasetsart_university/" class="social-link" target="_blank">Instagram</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="search-section">
+                <h3>🔍 ค้นหา</h3>
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="ค้นหาห้อง หรือชื่ออาคาร..." id="searchInput">
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+            </div>
+
+            <div class="buildings-section">
+                <h3>🏢 รายชื่ออาคาร</h3>
+                <div id="buildingsList"></div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <div id="buildingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">×</span>
+                <h2 id="modalTitle">ชื่ออาคาร</h2>
+            </div>
+            <div class="modal-body" id="modalBody">
+                </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        function createCustomIcon(colorClass) {
+            return L.divIcon({
+                className: `custom-marker ${colorClass}`,
+                iconSize: [40, 40], 
+                iconAnchor: [20, 39],
+                popupAnchor: [0, -40]
+            });
+        }
+    
+        const buildings = [
+            {
+                id: 1,
+                name: 'อาคารบริหาร - อาคาร 1',
+                description: 'หรือในอีกชื่อคือสำนักงานวิทยาเขต วิทยาเขตเฉลิมพระเกียรติ จังหวัดสกลนคร',
+                lat: 17.288649996555456,
+                lng: 104.11515437247861,
+                image: 'https://occ.csc.ku.ac.th/wp-content/uploads/2016/10/building1-1.jpg',
+                floor_plan_image: '',
+                rooms: [
+                '1-100', '1-100/1', '1-101', '1-101/1', '1-102', '1-103', '1-103/1', 
+                '1-104', '1-104/1', '1-105', '1-106', '1-107', '1-108', '1-109', 
+                '1-109/1', '1-110', '1-111', '1-112', '1-113', '1-113/1', 
+                'ห้องแสดงประวัติความเป็นมาของการจัดตั้งวิทยาเขตฯ', 'ห้องบรรยายสรุปแก่ผู้ที่มาเยี่ยมชมวิทยาเขต', 'ห้องงานกิจการนิสิต งานบุคคล งานธุรการ', 'งานประสัมพันธ์และวิเทศสัมพันธ์',
+                
+                '1-200', '1-201', '1-201/1', '1-202', '1-203', '1-203/1', '1-204', 
+                '1-204/1', '1-205', '1-206', '1-207', '1-208', '1-209', 
+                'ห้องสำนักงานของวิทยาเขต', 'ห้องทำงานฝ่ายบริหารและธุรการ', 'ห้องพระพิรุณ', 'ห้องนนทรี', 'ห้องอินทนิลน้ำ',
+
+                '1-300', '1-301', '1-302', '1-303', '1-304', '1-305', '1-306', 
+                '1-306/1', '1-307', '1-308', '1-309', '1-310', '1-311', '1-311/1', 
+                '1-311/2', '1-311/3', '1-311/4', '1-311/5', '1-312', '1-313', 
+                '1-314', '1-314/1', '1-314/2', '1-314/3', '1-314/6', '1-315', 
+                '1-316', '1-316/1', '1-316/2',
+                'ห้องสำนักงานผู้บริหารวิทยาเขต', 'รองอธิการบดีประจำวิทยาเขต', 'ผู้อำนวยการอีก 2 สำนัก',
+                
+                '1-400', '1-401', '1-402', '1-403', '1-404', '1-404/1', '1-405', 
+                '1-406', '1-407', '1-408', '1-409', '1-411', '1-412',
+                'ห้องเรียนระดับปริญญาโทและปริญญาเอกของวิทยาเขต', 'ห้องประชุมสัมมนาเฟื่องฟ้า',
+
+                '1-501', '1-502'
+             ],
+                color: 'marker-color-purple',
+                details: {
+                    year: 2542,
+                    floors: 4,
+                    description: 'อาคารเรียนรวมที่ใหญ่ที่สุด ประกอบด้วยห้องเรียน ห้องปฏิบัติการ และห้องประชุม'
+                }
+            },
+            {
+                id: 2,
+                name: 'อาคารเรียนรวม - อาคาร 2',
+                description: 'ใกล้กับอาคาร 20 อยู่บนถนนเส้นสนามบิน',
+                lat: 17.29079330402039,
+                lng: 104.11008906023095,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/bu2-scaled.jpg',
+                floor_plan_image: '',
+                rooms: [
+                '2-200', '2-201', '2-201/1', '2-202', '2-202/1', '2-203', '2-203/1', 
+                '2-204', '2-204/1', '2-205', '2-205/1', '2-206', '2-206/1', '2-207', 
+                '2-207/1', '2-208', '2-209', '2-210', '2-211', '2-212', '2-213', 
+                '2-214', '2-215', '2-216', 
+                
+                '2-301', '2-301/1', '2-302', '2-302/1', '2-303', '2-303/1', '2-304', 
+                '2-304/1', '2-305', '2-306', '2-307', '2-308', '2-309', '2-310', 
+                '2-311', '2-312', 
+                
+                '2-401', '2-402', '2-403', '2-404', '2-405', '2-406', '2-407', '2-408'
+                ], 
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2542,
+                    floors: 3,
+                    description: 'ชั้นล่างให้เป็นร้านอาหาร ร้านสะดวกซื้อ ร้านจำหน่ายอุปกรณ์การเรียน ธนาคาร และไปรษณีย์'
+                }
+            },
+            {
+                id: 3,
+                name: 'อาคารชุดพักอาศัย - อาคาร 3',
+                description: 'โรงแรมอุทยานบ้านเชียงเครือ',
+                lat: 17.295597931430105,
+                lng: 104.1154981651662,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_0091-scaled.jpg',
+                floor_plan_image: '',
+                rooms: [''],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2543,
+                    floors: 3,
+                    description: 'เป็นอาคารสวัสดิการเรื่องที่พักอาศัยของอาจารย์และบุคลากร และมีห้องรับรองที่เป็นโรงแรมอีกด้วย'
+                }
+            },
+            {
+                id: 4,
+                name: 'อาคารหอพักนิสิตชายอินทนิล - อาคาร 4',
+                description: 'อยู่ฝั่งซ้ายมือของ โรงแรมอุทยานบ้านเชียงเครือ',
+                lat: 17.296478860221697,
+                lng: 104.1145385366023,
+                image: 'https://tse4.mm.bing.net/th/id/OIP.F_WQAO8Lt6OYx4Kc3TwWCwHaE7?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3',
+                floor_plan_image: '',
+                rooms: [],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2543,
+                    floors: 4,
+                    description: 'ประกอบด้วยห้องพักจำนวน 84 ห้อง มีเจ้าหน้าที่รักษาความปลอดภัยตลอด 24 ชั่วโมง'
+                }
+            },
+            {
+                id: 5,
+                name: 'อาคารหอพักนิสิตหญิงนนทรี - อาคาร 5',
+                description: 'หอหญิงนนทรี',
+                lat: 17.295089584843296, 
+                lng: 104.11634014013529,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_0094-scaled.jpg',
+                floor_plan_image: '',
+                rooms: [''],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2543,
+                    floors: 4,
+                    description: 'ประกอบด้วยห้องพักจำนวน 84 ห้อง มีเจ้าหน้าที่รักษาความปลอดภัยตลอด 24 ชั่วโมง'
+                }
+            },
+            {
+                id: 6,
+                name: 'อาคารปฏิบัติการรวม - อาคาร 6',
+                description: 'อยู่ด้านหลังอาคาร 7',
+                lat: 17.285973335623478,
+                lng: 104.10631743227361,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/P1020078.jpg',
+                floor_plan_image: '',
+                rooms: [
+                '6-101', '6-102', '6-102/1', '6-102/2', '6-102/3', '6-103', '6-103/1', 
+                '6-104', '6-104/1', '6-104/2', '6-104/3', '6-105', '6-106', 
+                '6-201', '6-201/1', '6-202', '6-202/1', '6-203', '6-203/1', '6-204'
+                ],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2543,
+                    floors: 2,
+                    description: 'อาคารปฏิบัติการรวมประกอบด้วย ห้องปฏิบัติการทางด้านเคมี ด้านชีววิทยา ด้านฟิสิกส์ และด้านเขียนแบบวิศวกรรม แต่ละห้องมีขนาด 60 ที่นั่ง รวมทั้งห้องศูนย์รวมสาธิตประดิษฐกรรมทางวิทยาศาสตร์และผลงานค้นคว้าทดลองต่างๆ'
+                }
+            },
+            {
+                id: 7,
+                name: 'อาคารวิทยาศาสตร์และเทคโนโลยี - อาคาร 7',
+                description: 'ใกล้กับอาคาร 21',
+                lat: 17.286263350715032,
+                lng: 104.10658173051651,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/goody-67-1078x516.jpg',
+                floor_plan_image: '',
+                rooms:                 
+                [
+                '7 - 101', '7 - 102', '7 - 103', '7 - 104', '7 - 105', '7 - 106', '7 - 107', '7 - 108', 
+                '7 - 109', '7 - 110', '7 - 111', '7 - 112', '7 - 112/1', '7 - 112/2', '7 - 112/3', '7 - 112/4', 
+                '7 - 112/5', '7 - 112/6', '7 - 112/7', '7 - 112/8', '7 - 112/9', '7 - 112/10', '7 - 201', 
+                '7 - 202', '7 - 203', '7 - 204', '7 - 205', '7 - 206', '7 - 207', '7 - 208', '7 - 209', 
+                '7 - 210', '7 - 211-6', '7 - 212', '7 - 212/1-2', '7 - 213', '7 - 214', '7 - 215', '7 - 216', 
+                '7 - 217/1-B', '7 - 218', '7 - 219', '7 - 220', '7 - 221', '7 - 222', '7 - 223', '7 - 224', 
+                '7 - 225', '7 - 226', '7 - 301', '7 - 302', '7 - 303', '7 - 304', '7 - 305', '7 - 306', 
+                '7 - 307', '7 - 308', '7 - 309', '7 - 310', '7 - 311', '7 - 312', '7 - 313', '7 - 314', 
+                '7 - 315', '7 - 316', '7 - 317/1-B', '7 - 318', '7 - 319', '7 - 320', '7 - 321', '7 - 322', 
+                '7 - 323', '7 - 401', '7 - 402', '7 - 403', '7 - 404', '7 - 405', '7 - 406', '7 - 407', 
+                '7 - 408', '7 - 409', '7 - 410', '7 - 411', '7 - 412', '7 - 413', '7 - 414', '7 - 415', 
+                '7 - 416', '7 - 417/1-8', '7 - 418', '7 - 419', '7 - 420', '7 - 421', '7 - 422', '7 - 423', 
+                '7 - 423/1', '7 - 423/2', '7 - 423/3', '7 - 423/4'
+                ],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2544,
+                    floors: 4,
+                    description: 'อาคารวิทยาศาสตร์และเทคโนโลยีเป็นอาคารเรียนปฏิบัติการทางวิทยาศาสตร์และวิศวกรรมศาสตร์ และอุตสาหกรรมเกษตร ชั้นล่างเป็นห้องโถงไทสกลสำหรับจัดงานกิจกรรมต่างๆ'
+                }
+            },
+            {
+                id: 8,
+                name: 'อาคารปฏิบัติการวิศวกรรมเครื่องกล / เทคโนโลยีการอาหาร - อาคาร 8',
+                description: 'อยู่ใกล้กับอาคาร 8',
+                lat: 17.285973335623478,
+                lng: 104.10631743227361,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC00518-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: [
+                    '8/1-100', '8/1-100/1', '8/1-101', '8/1-102', '8/1-103', '8/1-104', 
+                    '8/1-105', '8/1-106', '8/1-106/1', '8/1-107', '8/1-108', '8/1-109', 
+                    '8/1-110',
+                    
+                    '8/2-100', '8/2-100/1', '8/2-101', '8/2-102', '8/2-103', '8/2-104', 
+                    '8/2-105', '8/2-106', '8/2-106/1', '8/2-107', '8/2-108', '8/2-109', 
+                    '8/2-110', '8/2-111', '8/2-112', '8/2-113', '8/2-114', '8/2-115', 
+                    '8/2-116', '8/2-117', '8/2-118', '8/2-119', '8/2-120'
+                ],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2545,
+                    floors: 1,
+                    description: 'อาคารที่ใช้ฝึกทดลองในเรื่องการแปรรูปผลิตภัณฑ์ที่เกี่ยวกับอาหาร'
+                }
+            },
+            {
+                id: 9,
+                name: 'อาคารเรียนเทคโนโลยีสารสนเทศ - อาคาร 9',
+                description: 'เข้ามาทางเส้นเข้ามอจะเป็นอาคารแรกที่เห็นหากมองไปยังด้านซ้าย และด้านหลังมีอาคาร 22 อยู่',
+                lat: 17.2887325,
+                lng: 104.1084027,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/P1020785-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: [
+                    '9-101', '9-101/1', '9-101/2', '9-101/3', '9-101/4', '9-101/5', 
+                    '9-101/6', '9-101/7', '9-102', '9-103', '9-103/1', '9-103/2', 
+                    '9-103/3', '9-104', '9-105', '9-105/1', '9-105/2', '9-106', 
+                    '9-107', '9-108', '9-109', '9-110', '9-111', 
+                    'ห้องสมุด e-Library', 'ห้อง หอจดหมายเหตุ',
+                    
+                    '9-200', '9-200/1', '9-201', '9-201/1', '9-202', '9-203', '9-204', 
+                    '9-205', '9-205/1', '9-205/2', '9-205/3', '9-206', '9-206/1', 
+                    '9-207', '9-207/1', '9-207/2', '9-208', '9-209', '9-210', 
+                    '9-210/1', '9-210/2', 
+                    'ห้องประชุม ระพีสาคริก', 'ห้องสำนักงานของ ผู้อำนวยการสำนักวิทยบริการ', 'ห้องคอมพิวเตอร์', 'ห้องสำนักทะเบียนฯ', 'ห้องโถงเอนกประสงค์',
+                    
+                    '9-300', '9-301', '9-301/1', '9-301/2', '9-301/3', '9-302', 
+                    '9-302/1', '9-303', '9-303/1', '9-304', '9-305', '9-306', 
+                    '9-307', '9-307/1', '9-307/2'
+                ],
+                color: 'marker-color-blue', // อาคารเรียน: สีน้ำเงิน
+                details: {
+                    year: 2546,
+                    floors: 3,
+                    description: 'อาคารเทคโนโลยีสารสนเทศ ใช้เป็นศูนย์กลางทางด้านเทคโนโยลีสารสนเทศและการสื่อสาร บริการคอมพิวเตอร์ การเรียนการสอนทางไกล'
+                }
+            },
+            {
+                id: 10,
+                name: 'โรงอาหารกลาง - อาคาร 10',
+                description: 'โรงอาหารกลาง - อาคาร 10',
+                lat: 17.2905700,
+                lng: 104.1133761,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/P1010738-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: [''],
+                color: 'marker-color-yellow', // โรงอาหาร: สีเหลือง
+                details: {
+                    year: 2546,
+                    floors: 1,
+                    description: 'ศูนย์รวมร้านอาหารสำหรับนิสิตและบุคลากร'
+                }
+            },
+            {
+                id: 11,
+                name: 'โรงกรองน้ำและหอวิทยาเขต - อาคาร 11',
+                description: 'โรงกรองน้ำและหอวิทยาเขต - อาคาร 11',
+                lat: 17.2839654,
+                lng: 104.1074354,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_01091-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องควบคุม', 'ห้องปั๊มน้ำ'],
+                color: 'marker-color-green', // อาคารสำคัญ: สีแดง (หรือสีตามที่ต้องการ)
+                details: {
+                    year: 2542,
+                    floors: 1,
+                    description: 'ระบบจัดการน้ำของวิทยาเขต'
+                }
+            },
+            {
+                id: 12,
+                name: 'อาคารสนามกีฬา - อาคาร 12',
+                description: 'อาคารสนามกีฬา - อาคาร 12',
+                lat: 17.2934089,
+                lng: 104.1121748,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/IMG_1191-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องออกกำลังกาย', 'ห้องเปลี่ยนเสื้อผ้า'],
+                color: 'marker-color-red', // กีฬา: สีม่วง
+                details: {
+                    year: 2550,
+                    floors: 2,
+                    description: 'ศูนย์รวมกิจกรรมกีฬาในร่ม'
+                }
+            },
+            {
+                id: 13,
+                name: 'พิพิรภัณฑ์องค์ความรู้ - อาคาร 13',
+                description: 'พิพิรภัณฑ์องค์ความรู้ - อาคาร 13',
+                lat: 17.2899884,
+                lng: 104.1146413,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/IMG_9398-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องจัดแสดง 1', 'ห้องจัดแสดง 2', 'ห้องบรรยาย'],
+                color: 'marker-color-blue', // อาคารเรียน/วัฒนธรรม: สีน้ำเงิน
+                details: {
+                    year: 2558,
+                    floors: 3,
+                    description: 'แหล่งรวบรวมและจัดแสดงองค์ความรู้ต่างๆ ของมหาวิทยาลัย'
+                }
+            },
+            {
+                id: 14,
+                name: 'หอประชุม - อาคาร 14',
+                description: 'หอประชุม - อาคาร 14',
+                lat: 17.2892831,
+                lng: 104.1128340,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/goody-78-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องประชุมใหญ่', 'ห้องซ้อม'],
+                color: 'marker-color-green', // อาคารสำคัญ: สีแดง
+                details: {
+                    year: 2550,
+                    floors: 2,
+                    description: 'สถานที่จัดพิธีสำคัญและกิจกรรมขนาดใหญ่'
+                }
+            },
+            {
+                id: 15,
+                name: 'อาคารถิ่นมั่นในพุทรธรรม - อาคาร 15',
+                description: 'อาคารถิ่นมั่นในพุทรธรรม - อาคาร 15',
+                lat: 17.2864484,
+                lng: 104.1094913,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_01031-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องปฏิบัติธรรม', 'ห้องบรรยายธรรม'],
+                color: 'marker-color-green', // สถานที่ศาสนา: สีเขียว (หรือสีตามที่ต้องการ)
+                details: {
+                    year: 2550,
+                    floors: 2,
+                    description: 'สถานที่ทำกิจกรรมทางศาสนาและส่งเสริมคุณธรรม'
+                }
+            },
+            {
+                id: 16,
+                name: 'อาคารสถานพยาบาล - อาคาร 16',
+                description: 'อาคารสถานพยาบาล - อาคาร 16',
+                lat: 17.2927747,
+                lng: 104.1154116,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/goody-3-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องตรวจ', 'ห้องพักผู้ป่วย', 'ห้องยา'],
+                color: 'marker-color-green', // สถานพยาบาล: สีแดง
+                details: {
+                    year: 2555,
+                    floors: 2,
+                    description: 'ให้บริการด้านสุขภาพแก่นิสิตและบุคลากร'
+                }
+            },
+            {
+                id: 17,
+                name: 'อาคารชุดพักอาศัยบุคลากร 2 - อาคาร 17',
+                description: 'อาคารชุดพักอาศัยบุคลากร 2 - อาคาร 17',
+                lat: 17.2941967,
+                lng: 104.1177783,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_0148-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องพัก'],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2552,
+                    floors: 3,
+                    description: 'ที่พักสำหรับบุคลากรของมหาวิทยาลัย'
+                }
+            },
+            {
+                id: 18,
+                name: 'หอพักนิสิตหญิงตาลฟ้า - อาคาร 18',
+                description: 'หอพักนิสิตหญิงตาลฟ้า - อาคาร 18',
+                lat: 17.2957605,
+                lng: 104.1185870,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2016/09/DSC_0184-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องพัก'],
+                color: 'marker-color-green', // ที่พัก: สีเขียว
+                details: {
+                    year: 2555,
+                    floors: 4,
+                    description: 'หอพักสำหรับนิสิตหญิง'
+                }
+            },
+            {
+                id: 19,
+                name: 'อาคารสนามกีฬาใหม่ (ยิม) - อาคาร 19',
+                description: 'อาคารสนามกีฬาใหม่ (ยิม) - อาคาร 19',
+                lat: 17.2908236,
+                lng: 104.1149563,
+                image: 'https://drive.google.com/file/d/1qf9n2G9H9nkEwSdk8OQ7B67w_uH9oscC/view?usp=sharing',
+                floor_plan_image: '',
+                rooms: ['สนามบาส', 'สนามวอลเลย์บอล', 'ห้องเวท'],
+                color: 'marker-color-red',
+                details: {
+                    year: 2560,
+                    floors: 1,
+                    description: 'ศูนย์กีฬาในร่มสำหรับนิสิต'
+                }
+            },
+            {
+                id: 20,
+                name: 'อาคารสังคมศาสตร์และวิทยาศาสตร์สุขภาพ - อาคาร 20',
+                description: 'อาคารสังคมศาสตร์และวิทยาศาสตร์สุขภาพ - อาคาร 20',
+                lat: 17.2925775,
+                lng: 104.1111476,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2021/02/DJI_002031-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องเรียน 2001', 'ห้องเรียน 2002', 'ห้องสัมมนา'],
+                color: 'marker-color-blue',
+                details: {
+                    year: 2562,
+                    floors: 4,
+                    description: 'ศูนย์รวมการเรียนการสอนด้านสังคมศาสตร์และสุขภาพ'
+                }
+            },
+            {
+                id: 21,
+                name: 'อาคารวิทยาศาสตร์และเทคโนโลยี 2 - อาคาร 21',
+                description: 'อาคารวิทยาศาสตร์และเทคโนโลยี 2 - อาคาร 21',
+                lat: 17.2868242,
+                lng: 104.1073107,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2021/02/IMG_9577-Pano-Edit-1078x516.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องปฏิบัติการ A', 'ห้องปฏิบัติการ B'],
+                color: 'marker-color-blue',
+                details: {
+                    year: 2565,
+                    floors: 3,
+                    description: 'อาคารปฏิบัติการเฉพาะทางวิทยาศาสตร์'
+                }
+            },
+            {
+                id: 22,
+                name: 'อาคารวิทยาศาสตร์และเทคโนโลยี 3 - อาคาร 22',
+                description: 'อาคารวิทยาศาสตร์และเทคโนโลยี 3 - อาคาร 22',
+                lat: 17.2876130,
+                lng: 104.1072983,
+                image: 'https://www.csc.ku.ac.th/th/wp-content/uploads/2021/02/IMG_9606-351x185.jpg',
+                floor_plan_image: '',
+                rooms: ['ห้องวิจัย 1', 'ห้องวิจัย 2'],
+                color: 'marker-color-blue',
+                details: {
+                    year: 2567,
+                    floors: 3,
+                    description: 'อาคารวิจัยและพัฒนาขั้นสูง'
+                }
+            }
+        ];
+
+        // Initialize Map
+        // Central coordinates for Sakon Nakhon Campus
+        const centerCoords = [17.29154, 104.11207]; 
+        const map = L.map('map').setView(centerCoords, 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        const markers = {};
+
+        buildings.forEach(building => {
+            const customIcon = createCustomIcon(building.color || 'marker-color-blue');
+            
+            const marker = L.marker([building.lat, building.lng], { icon: customIcon })
+                .addTo(map)
+                .bindPopup(`<b>${building.name}</b><br>${building.description}`)
+                .on('click', () => showBuildingModal(building));
+            
+            markers[building.id] = marker;
+        });
+
+        // Generate buildings list (No change needed here, as it uses the existing data)
+        function generateBuildingsList() {
+            const buildingsList = document.getElementById('buildingsList');
+            buildingsList.innerHTML = '';
+            
+            buildings.forEach(building => {
+                const buildingItem = document.createElement('div');
+                buildingItem.className = 'building-item';
+                buildingItem.innerHTML = `
+                    <div class="building-name">${building.name}</div>
+                    <div class="building-desc">${building.description}</div>
+                `;
+                buildingItem.addEventListener('click', () => {
+                    map.setView([building.lat, building.lng], 18);
+                    markers[building.id].openPopup();
+                    showBuildingModal(building);
+                });
+                buildingsList.appendChild(buildingItem);
+            });
+        }
+
+        function showBuildingModal(building) {
+            const modal = document.getElementById('buildingModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = building.name;
+            
+            // ✅ FIX: Corrected Google Maps URL for proper navigation query
+            const googleMapsUrl = `https://www.google.com/maps?q=${building.lat},${building.lng}`;
+
+            const mainImageHtml = building.image && building.image.trim() !== '' 
+                ? `<div class="building-image-container"><img src="${building.image}" alt="${building.name}" class="building-image"></div>`
+                : `<div class="building-image-placeholder">🖼️ ไม่มีรูปภาพตัวอย่าง</div>`;
+            
+            const floorPlanHtml = building.floor_plan_image && building.floor_plan_image.trim() !== ''
+                ? `
+                    <div style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #ddd; border-radius: 15px; background-color: #f8f9fa;">
+                        <h4 style="margin-bottom: 0.75rem; color: #1e3c72;">🗺️ ผังอาคาร</h4>
+                        <img 
+                            src="${building.floor_plan_image}" 
+                            alt="ผังอาคาร ${building.name}"
+                            style="width: 100%; max-width: 200px; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: block; margin: 0 auto;" 
+                        />
+                    </div>
+                `
+                : '';
+
+            // --- ✨ NEW: Room list display logic ---
+            let roomsHtml = '';
+            const hasRooms = building.rooms && building.rooms.length > 0 && building.rooms[0].trim() !== '';
+
+            if (hasRooms) {
+                const rooms = building.rooms;
+                if (rooms.length > 6) {
+                    // Show first 6 items and a "Show All" button
+                    const initialRooms = rooms.slice(0, 6).map(room => `<div class="room-item">${room}</div>`).join('');
+                    const allRoomsHtml = rooms.map(room => `<div class="room-item">${room}</div>`).join('');
+                    const allRoomsJson = JSON.stringify(allRoomsHtml);
+
+                    roomsHtml = `
+                        <div class="rooms-grid" id="roomsGridContainer">
+                            ${initialRooms}
+                        </div>
+                        <button class="show-all-btn" id="showAllRoomsBtn" onclick='
+                            document.getElementById("roomsGridContainer").innerHTML = ${allRoomsJson};
+                            this.style.display = "none";
+                        '>
+                            แสดงทั้งหมด (${rooms.length} ห้อง)
+                        </button>
+                    `;
+                } else {
+                    // Show all rooms if there are 6 or fewer
+                    roomsHtml = `
+                        <div class="rooms-grid">
+                            ${rooms.map(room => `<div class="room-item">${room}</div>`).join('')}
+                        </div>
+                    `;
+                }
+            } else {
+                // Display message if no room data is available
+                roomsHtml = `
+                    <div class="rooms-grid">
+                        <div class="room-item" style="grid-column: 1 / -1; background: #ffebee; color: #d32f2f;">ไม่มีข้อมูลห้อง</div>
+                    </div>
+                `;
+            }
+            // --- End of new logic ---
+
+            modalBody.innerHTML = `
+                ${mainImageHtml} 
+
+                <div class="building-details">
+                    <h4>รายละเอียด</h4>
+                    <p><strong>ปีที่สร้าง:</strong> ${building.details.year || 'N/A'}</p>
+                    <p><strong>จำนวนชั้น:</strong> ${building.details.floors || 'N/A'} ชั้น</p>
+                    <p><strong>คำอธิบาย:</strong> ${building.details.description || 'ไม่มีคำอธิบายเพิ่มเติม'}</p>
+                </div>
+                
+                <button class="navigation-btn" 
+                    style="margin-bottom: 2rem;" 
+                    onclick="window.open('${googleMapsUrl}', '_blank')">
+                    🗺️ เปิด Google Maps เพื่อนำทาง
+                </button>
+
+                ${floorPlanHtml} 
+
+                <div class="rooms-section">
+                    <h4>รายชื่อห้อง</h4>
+                    ${roomsHtml}
+                </div>
+            `;
+                        
+            modal.style.display = 'block';
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                
+                if (query.length === 0) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                const results = [];
+                
+                buildings.forEach(building => {
+                    if (building.name.toLowerCase().includes(query)) {
+                        results.push({
+                            type: 'building',
+                            text: building.name,
+                            building: building
+                        });
+                    }
+                    
+                    // Search in rooms
+                    building.rooms.forEach(room => {
+                        if (room.toLowerCase().includes(query)) {
+                            // Check for duplicates before pushing (searching room in building name)
+                            if (!results.find(r => r.type === 'room' && r.text.includes(room))) {
+                                results.push({
+                                    type: 'room',
+                                    text: `${room} (${building.name})`,
+                                    building: building
+                                });
+                            }
+                        }
+                    });
+                });
+                
+                searchResults.innerHTML = '';
+                
+                if (results.length > 0) {
+                    results.slice(0, 10).forEach(result => { // Limit to 10 results
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'search-result-item';
+                        resultItem.textContent = result.text;
+                        resultItem.addEventListener('click', () => {
+                            map.setView([result.building.lat, result.building.lng], 18);
+                            markers[result.building.id].openPopup();
+                            showBuildingModal(result.building);
+                            searchInput.value = result.building.name;
+                            searchResults.style.display = 'none';
+                        });
+                        searchResults.appendChild(resultItem);
+                    });
+                    searchResults.style.display = 'block';
+                } else {
+                    searchResults.innerHTML = '<div class="search-result-item" style="color:#aaa;">ไม่พบผลลัพธ์</div>';
+                    searchResults.style.display = 'block';
+                }
+            });
+            
+            // Hide results when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+
+        // Close Modal Functionality
+        const modal = document.getElementById('buildingModal');
+        const span = document.getElementsByClassName('close')[0];
+
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        generateBuildingsList();
+        setupSearch();
+
+        map.invalidateSize();
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 300);
+    </script>
+</body>
+</html>
